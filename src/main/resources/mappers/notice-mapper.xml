@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="NoticeMapper">
+	<!-- typeAlias를 등록하면 type을 별칭으로 작성가능 -->
+	<resultMap type="Notice" id="noticeResultMap">
+		<id property="noticeNo" column="NOTICE_NO"/>
+		<result property="noticeSubject" column="NOTICE_SUBJECT"/>
+		<result property="noticeContent" column="NOTICE_CONTENT"/>
+		<result property="noticeWriter" column="NOTICE_WRITER"/>
+		<result property="nCreateDate" column="N_CREATE_DATE"/>
+		<result property="nUpdateDate" column="N_UPDATE_DATE"/>
+		<result property="noticeFileName" column="NOTICE_FILENAME"/>
+		<result property="noticeFilePath" column="NOTICE_FILEPATH"/>
+		<result property="noticeFileLength" column="NOTICE_FILELENGTH"/>
+	</resultMap>
+
+	<insert id="insertNotice">
+		INSERT INTO NOTICE_TBL VALUES (SEQ_NOTICE_NO.NEXTVAL, #{noticeSubject}, #{noticeContent}, #{noticeWriter}, DEFAULT, DEFAULT, #{noticeFileName}, #{noticeFilePath}, #{noticeFileLength})
+	</insert>
+	
+	<select id="selectNoticeList" resultMap="noticeResultMap">
+		SELECT * FROM NOTICE_TBL
+	</select>
+	
+	<select id="selectListCount" resultType="_int">
+		SELECT COUNT(*) FROM NOTICE_TBL
+	</select>
+	
+	
+	<select id="selectNoticesByKeyword" resultMap="noticeResultMap">
+		SELECT * FROM NOTICE_TBL
+		<!-- select태그의 name값이 value값이면 쿼리실행 : searchCondition과 searchKeyword를 넘겨줘야함 -->
+		<if test="searchCondition == 'all'"> 
+			WHERE NOTICE_SUBJECT like '%'||#{searchKeyword}||'%' OR NOTICE_CONTENT like '%'||#{searchKeyword}||'%' OR NOTICE_WRITER like '%'||#{searchKeyword}||'%'		
+		</if> 
+		<if test="searchCondition == 'writer'">
+			WHERE NOTICE_WRITER like '%'||#{searchKeyword}||'%'
+		</if> 
+		<if test="searchCondition == 'title'">
+			WHERE NOTICE_SUBJECT like '%'||#{searchKeyword}||'%' 		
+		</if> 
+		<if test="searchCondition == 'content'">
+			WHERE NOTICE_CONTENT like '%'||#{searchKeyword}||'%' 
+		</if> 
+	</select>
+	
+	<select id="selectListByKeywordCount" resultType="_int">
+	<!-- 검색키워드에 따라 검색결과가 달라지고, 행의 개수도 달라지는 동적쿼리 적용 -->
+		SELECT COUNT(*) FROM NOTICE_TBL
+		<if test="searchCondition == 'all'"> 
+			WHERE NOTICE_SUBJECT like '%'||#{searchKeyword}||'%' OR NOTICE_CONTENT like '%'||#{searchKeyword}||'%' OR NOTICE_WRITER like '%'||#{searchKeyword}||'%'		
+		</if> 
+		<if test="searchCondition == 'writer'">
+			WHERE NOTICE_WRITER like '%'||#{searchKeyword}||'%'
+		</if> 
+		<if test="searchCondition == 'title'">
+			WHERE NOTICE_SUBJECT like '%'||#{searchKeyword}||'%' 		
+		</if> 
+		<if test="searchCondition == 'content'">
+			WHERE NOTICE_CONTENT like '%'||#{searchKeyword}||'%' 
+		</if>  
+	</select>
+	<!-- 동적쿼리 사용전 코드복잡함 -> Mybatis의 동적쿼리 사용
+	<select id="searchNoticesByAll" resultMap="noticeResultMap">
+		SELECT * FROM NOTICE_TBL WHERE NOTICE_SUBJECT like '%'||#{noticeSubject}||'%' OR NOTICE_CONTENT like '%'||#{noticeContent}||'%' OR NOTICE_WRITER like '%'||#{noticeWriter}||'%'
+	</select>
+	
+	<select id="searchNoticesByWriter" resultMap="noticeResultMap">
+		SELECT * FROM NOTICE_TBL WHERE NOTICE_WRITER like '%'||#{noticeWriter}||'%'
+	</select>
+	
+	<select id="selectNoticesByTitle" resultMap="noticeResultMap">
+		SELECT * FROM NOTICE_TBL WHERE NOTICE_SUBJECT like '%'||#{noticeSubject}||'%'
+	</select>
+	
+	<select id="searchNoticesByContent" resultMap="noticeResultMap">
+		SELECT * FROM NOTICE_TBL WHERE NOTICE_CONTENT like '%'||#{noticeContent}||'%'
+	</select>
+	-->
+</mapper>
