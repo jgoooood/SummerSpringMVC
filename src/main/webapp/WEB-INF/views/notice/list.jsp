@@ -36,7 +36,11 @@
 				<c:forEach var="notice" items="${nList}" varStatus="i">
 					<tr>
 						<td>${i.count}</td>
-						<td>${notice.noticeSubject}</td>
+						<!-- notice/detail.kh?noticeNo=${notice.noticeNo}-->
+						<c:url var="detailUrl" value="/notice/detail.kh">
+							<c:param name="noticeNo" value="${notice.noticeNo}"></c:param>
+						</c:url>
+						<td><a href="${detailUrl}">${notice.noticeSubject}</a></td>
 						<td>${notice.noticeWriter}</td>
 						<td>
 							<!-- 포맷태그로 연,월,일만 나오도록 표시 -->

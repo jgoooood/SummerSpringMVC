@@ -1,7 +1,8 @@
 package com.summer.spring.notice.controller;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,21 @@ public class NoticeController {
 			, HttpServletRequest request
 			, Model model) {
 		try {
-			if(!uploadFile.getOriginalFilename().equals("")) {
+			//파일업로드 코드는 수정부분에서도 사용->메소드화 진행
+			if(uploadFile != null && !uploadFile.getOriginalFilename().equals("")) {
+				Map<String, Object> nMap = this.saveFile(uploadFile, request);
+				String fileName = (String)nMap.get("fileName");
+				String fileRename = (String)nMap.get("fileRename");
+				String savePath = (String)nMap.get("filePath");
+				long fileLength = (long)nMap.get("fileLength");
+				
+				//같은 이름의 파일이라도 개별적으로 적용될 수 있게 rename해야함
+				notice.setNoticeFileName(fileName);
+				notice.setNoticeFileRename(fileRename);
+				notice.setNoticeFilePath(savePath);
+				notice.setNoticeFileLength(fileLength);
+				
+				/* saveFile메소드로 대체
 				//================ 1. 파일 이름 ================
 				String fileName = uploadFile.getOriginalFilename();
 				String root = request.getSession().getServletContext().getRealPath("resources");
@@ -67,7 +82,7 @@ public class NoticeController {
 				// DB에 저장하기 위해 notice에 데이터를 set하는 부분
 				notice.setNoticeFileName(fileName);
 				notice.setNoticeFilePath(savePath);
-				notice.setNoticeFileLength(fileLength);
+				notice.setNoticeFileLength(fileLength); */
 			}
 			int result = service.insertNotice(notice);
 			if(result > 0) {
@@ -86,6 +101,58 @@ public class NoticeController {
 		}
 	}
 	
+	@RequestMapping(value="/notice/modify.kh", method = RequestMethod.GET)
+	public String showModifyForm(@RequestParam("noticeNo") Integer noticeNo, Model model) {
+		Notice noticeOne = service.selectNoticeByNo(noticeNo);
+		model.addAttribute("notice", noticeOne);
+		return "notice/modify";
+	}
+	
+	@RequestMapping(value="/notice/modify.kh", method = RequestMethod.POST)
+	public String updateNotice(
+			@ModelAttribute Notice notice
+			, @RequestParam(value="uploadFile", required=false) MultipartFile uploadFile
+			, HttpServletRequest request
+			, Model model) {
+		try {
+			if(uploadFile != null && !uploadFile.isEmpty()) {
+				// 수정
+				// 1. 대체 2. 삭제 후 등록
+				// 기존 업로드 된 파일의 존재여부 체크 후  없으면 새로 업로드
+				String fileName = notice.getNoticeFileRename();
+				if(fileName != null) {
+					//있으면 기존파일 삭제,
+					//메소드 생성 : deleteFile();
+					//	File file = new File(notice.getNoticeFilePath());
+					//	file.delete();
+					this.deleteFile(request, fileName);
+				}
+				Map<String, Object> infoMap = this.saveFile(uploadFile, request); //기존 파일 불러오는 메소드->Map으로 받기
+				//Map 사용시 데이터타입은 object이기 때문에 강제형변환을 해줘야함
+				String noticeFileName = (String)infoMap.get("fileName"); //변수 사용 후 setter메소드로 넘기기
+				long noticeFileLength = (long)infoMap.get("fileLength");
+				notice.setNoticeFileName(noticeFileName); 
+				notice.setNoticeFileRename((String)infoMap.get("fileRename"));
+				notice.setNoticeFilePath((String)infoMap.get("filePath")); //코드 한줄로
+				notice.setNoticeFileLength(noticeFileLength);
+			}
+			int result = service.updateNotice(notice);
+			if (result > 0) {
+				return "redirect:/notice/detail.kh?noticeNo="+notice.getNoticeNo();
+			} else {
+				model.addAttribute("msg", "공지사항 수정이 완료되지 않았습니다.");
+				model.addAttribute("error", "공지사항 수정 실패");
+				model.addAttribute("url", "/notice/insert.kh");
+				return "common/errorPage";
+			}
+		} catch (Exception e) {
+			model.addAttribute("msg", "관리자에게 문의해주세요");
+			model.addAttribute("error", e.getMessage());
+			model.addAttribute("url", "/index.jsp");
+			return "common/errorPage";
+		}
+	}
+
 	@RequestMapping(value="/notice/list.kh", method=RequestMethod.GET)
 	public String showNoticeList(
 			@RequestParam(value="page", required=false, defaultValue="1") Integer currentPage
@@ -207,8 +274,92 @@ public class NoticeController {
 		}
 	}
 	
-	
-	
+	@RequestMapping(value="/notice/detail.kh", method=RequestMethod.GET)
+	//Integer는 null체크 가능
+	public String showNoticeDetail(@RequestParam("noticeNo") Integer noticeNo, Model model) {
+		try {
+			Notice notice = service.selectNoticeByNo(noticeNo);
+			if(notice != null) {
+				model.addAttribute("notice", notice);
+				return "notice/detail";				
+			} else {
+				model.addAttribute("msg", "데이터 조회가 완료되지 않았습니다.");
+				model.addAttribute("error", "조회 실패");
+				model.addAttribute("url", "/notice/list.kh");
+				return "common/errorPage";
+			}
+			
+		} catch (Exception e) {
+			model.addAttribute("msg", "관리자에게 문의해주세요");
+			model.addAttribute("error", e.getMessage());
+			model.addAttribute("url", "/index.jsp");
+			return "common/errorPage";
+		} 
+	}
+
+	public Map<String, Object> saveFile(MultipartFile uploadFile, HttpServletRequest request) throws Exception {
+		// 넘겨야 하는 값이 여러개일 때 사용하는 방법
+		// 1. VO클래스를 만들기
+		// 2. HashMap 사용(더 간단함) -> 데이터 타입이 여러개일경우 Object데이터 타입을 사용
+		Map<String, Object> infoMap = new HashMap<String, Object>();
+		//================ 1. 파일 이름 ================
+		String fileName = uploadFile.getOriginalFilename();
+		String root = request.getSession().getServletContext().getRealPath("resources");
+		//ServletContext 서블릿 정보가 저장된 객체
+		//getRealPath : resources폴더의 경로를 가져옴 SummerSpringMVC/src/main/webapp/resources
+		//업로드시 resources폴더에 저장됨
+		//resources폴더에 업로드한 파일을 저장할 폴더saveFolder가 없을 경우 자동 생성
+		String saveFolder = root + "\\uploadFiles";
+		File folder = new File(saveFolder);
+		if(!folder.exists()) { //폴더가 없으면
+			folder.mkdir(); //폴더생성
+		}
+		
+		//================ 2. 파일 경로 ================
+//file이름을 rename함 : 랜덤함수 사용
+//		Random rand = new Random();
+//		String strResult = "N";
+//		for(int i = 0; i < 7; i++) {
+//			//1부터 20까지의 수를 랜덤으로 뽑음
+//			int result = rand.nextInt(20)+1;
+//			strResult += result+"";
+//		}
+		//파일 올린 시각에 따라 리네임
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss"); //*나중에 SS대문자, ss소문자와 비교*
+		String strResult = sdf.format(new Date(System.currentTimeMillis()));
+		 //fileName의 확장자 추출 : .을 포함하지 않고 자름 +1
+		String ext = fileName.substring(fileName.lastIndexOf(".")+1);
+		//식별하기위한 N값 + Rename값에 업로드한 파일의 추출된 확장자를 붙여줌
+		String fileRename = "N"+strResult+"."+ext; 
+		//파일 경로(내가 저장한 후에 그 경로에 DB에 저장하도록 준비하는 것)
+		String savePath = saveFolder + "\\" + fileRename;
+		// 파일객체 생성
+		File file = new File(savePath);
+		// ********************** 실제파일저장
+		// transferTo메소드의 예외처리는 Exception으로 던지기->메소드 호출하는 곳(인서트메소드)에 try-catch 되어 있음
+		uploadFile.transferTo(file); //파일저장완료
+		
+		// ================ 3. 파일 크기 ================
+		long fileLength = uploadFile.getSize();
+		
+		// ================ 4. Map으로 파일이름, 경로, 크기 넘기기 ================
+		infoMap.put("fileName", fileName);
+		infoMap.put("fileRename", fileRename);
+		infoMap.put("filePath", savePath);
+		infoMap.put("fileLength", fileLength);
+		return infoMap;
+	}
+
+	private void deleteFile(HttpServletRequest request, String fileName) {
+		//HttpServletRequest request : 경로가져올 수 있음
+		String root = request.getSession().getServletContext().getRealPath("resources");
+		String delFilepath = root+"\\uploadFiles\\"+fileName;
+		File file = new File(delFilepath);
+		if(file.exists()) {
+			file.delete();
+		}
+		
+	}
 	
 	
 	

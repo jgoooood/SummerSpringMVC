@@ -53,6 +53,18 @@ public class NoticeStoreLogic implements NoticeStore{
 		return result;
 	}
 
+	@Override
+	public Notice selectNoticeByNo(SqlSession session, Integer noticeNo) {
+		Notice noticeOne = session.selectOne("NoticeMapper.selectNoticeByNo", noticeNo);
+		return noticeOne;
+	}
+
+	@Override
+	public int updateNotice(SqlSession session, Notice notice) {
+		int result = session.update("NoticeMapper.updateNotice", notice);
+		return result;
+	}
+
 	/* 중복코드 많음 -> mybatis 동적쿼리 사용
 	@Override
 	public List<Notice> searchNoticesByAll(SqlSession session, String searchKeyword) {
