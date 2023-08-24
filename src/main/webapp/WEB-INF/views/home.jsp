@@ -17,6 +17,12 @@
 		<c:if test="${memberId ne null}">
 		${memberName} 님 환영합니다. 
 		<a href="/member/logout.kh">로그아웃</a><br>
+		<form action="/member/mypage.kh" method="post">
+<%-- 			<input type="hidden" name="memberId" value="${memberId}"> --%>
+<!-- 			post방식으로 로그인하면 쿼리스트링에 id가 보이지 않음 -->
+			<input type ="submit" value="마이페이지">
+		</form>
+		<%-- 기존 : get방식으로 진행해서 쿼리스트링이 모두 보였음 --%>
 		<a href="/member/mypage.kh?memberId=${memberId }">마이페이지</a><br>
 		</c:if>
 	</body>

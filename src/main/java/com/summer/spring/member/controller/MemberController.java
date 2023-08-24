@@ -9,10 +9,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.bind.annotation.SessionAttributes;
 
 import com.summer.spring.member.domain.Member;
 import com.summer.spring.member.service.MemberService;
 
+@SessionAttributes
 @Controller
 public class MemberController {
 	
@@ -105,7 +108,12 @@ public class MemberController {
 		}
 	}
 	
-	@RequestMapping(value="/member/mypage.kh", method=RequestMethod.GET)
+	/* 기존방식 : 쿼리스트링 조작으로 정보유출 가능성있음
+	//두가지 방식을 중괄호로 한번에 사용가능
+	//@RequestMapping(value="/member/mypage.kh", method= {RequestMethod.GET, RequestMethod.POST})
+	//POST로 할경우 1차적으로 쿼리스트링이 감춰짐->개발자도구에서 TOOL을 사용해서 조작가능->2차방안필요
+	//2차방안 : 세션에서 값을 가져와야함->코드수정 필요
+	@RequestMapping(value="/member/mypage.kh", method= RequestMethod.POST)
 	public String showMypage(@RequestParam("memberId") String memberId, Model model) {
 		try {
 			Member mOne = service.selectOneById(memberId);
@@ -125,6 +133,38 @@ public class MemberController {
 			return "common/errorPage";
 		}
 	}
+	*/
+	// session에서 id값을 가지고 올 경우 form action방식을 수정하지 않아도 되고, get방식과 post방식 사용가능
+	// 쿼리스트링에 id 안보이고 싶다면 post방식 사용
+	// 또한 세션 만료시 마이페이지는 조회할 수 없고 로그인한 id가 없으면 쿼리스트링 조작으로 접근 불가능
+	@RequestMapping(value="/member/mypage.kh", method= {RequestMethod.GET, RequestMethod.POST})
+	public String showMypage(
+			HttpSession session
+			, Model model) {
+		try {
+			String memberId = (String)session.getAttribute("memberId");
+			Member member = null;
+			//memberId null체크
+			if(memberId != "" && memberId != null) {
+				member = service.selectOneById(memberId);
+			}
+			if(member != null) {
+				model.addAttribute("member", member);
+				return "member/mypage";
+			} else {
+				model.addAttribute("msg", "회원정보를 불러올 수 없습니다.");
+				model.addAttribute("error", "회원정보조회 실패");
+				model.addAttribute("url", "/index.jsp");
+				return "common/errorPage";
+			}	
+		} catch (Exception e) {
+			model.addAttribute("msg", "관리자에게 문의해주세요");
+			model.addAttribute("error", e.getMessage());
+			model.addAttribute("url", "/index.jsp");
+			return "common/errorPage";
+		}
+	}
+	
 /*	기존 회원탈퇴 방식
 	@RequestMapping(value="/member/delete.kh", method=RequestMethod.GET)
 	public String outServiceMember(@RequestParam("memberId") String memberId
