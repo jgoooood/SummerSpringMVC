@@ -21,13 +21,17 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.summer.spring.board.domain.Board;
 import com.summer.spring.board.domain.PageInfo;
+import com.summer.spring.board.domain.Reply;
 import com.summer.spring.board.service.BoardService;
+import com.summer.spring.board.service.ReplyService;
 
 @Controller
 public class BoardController {
 
 	@Autowired
 	private BoardService bService;
+	@Autowired
+	private ReplyService rService;
 	
 	// ModelAndView : 페이지이동, 데이터 보낼 수 있는 클래스 -> 매개변수 mv 필요 
 	// 메소드로 다양한 기능을 사용해서 페이지 이동-> return mv;
@@ -103,6 +107,11 @@ public class BoardController {
 		try {
 			Board board = bService.selectBoardOneByNo(boardNo);
 			if(board != null) {
+				//게시글이 있으면 리스트출력
+				List<Reply> replyList = rService.selectReplyList(boardNo);
+				if(replyList.size() > 0) { //댓글목록이 있으면 저장
+					mv.addObject("rList", replyList);
+				}
 				mv.addObject("board", board);
 				mv.setViewName("/board/detail");
 			} else {
