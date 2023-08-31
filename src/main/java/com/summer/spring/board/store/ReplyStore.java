@@ -32,4 +32,20 @@ public interface ReplyStore {
 	 */
 	int updateReply(SqlSession session, Reply reply);
 
+	/**
+	 * 댓글 삭제 Store
+	 * @param session
+	 * @param reply
+	 * @return
+	 */
+	int deleteReply(SqlSession session, Reply reply);
+
+	/**
+	 * 댓글 전체 삭제 Store
+	 * @param session
+	 * @param boardNo
+	 * @return
+	 */
+	int deleteAllReply(SqlSession session, Integer boardNo);
+
 }

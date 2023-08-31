@@ -29,4 +29,19 @@ public interface ReplyService {
 	 */
 	List<Reply> selectReplyList(Integer boardNo);
 
+	/**
+	 * 댓글 삭제 Service
+	 * @param reply
+	 * @return
+	 */
+	int deleteReply(Reply reply);
+
+
+	/**
+	 * 모든 댓글 삭제 Service
+	 * @param boardNo
+	 * @return
+	 */
+	int deleteAllReply(Integer boardNo);
+
 }

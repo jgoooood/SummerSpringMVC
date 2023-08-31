@@ -13,6 +13,7 @@
 		 		PW : <input type="password" name="memberPw"><br>
 		 		<input type="submit" value="로그인">
 		 	</form>	
+		 	<a href="/member/register.kh">회원가입</a><br>
 		</c:if>
 		<c:if test="${memberId ne null}">
 		${memberName} 님 환영합니다. 
@@ -25,6 +26,7 @@
 		<%-- 기존 : get방식으로 진행해서 쿼리스트링이 모두 보였음 --%>
 		<a href="/member/mypage.kh">마이페이지</a><br>
 		<a href="/board/list.kh">게시판</a><br>
+		<a href="/member/register.kh">회원가입</a><br>
 		</c:if>
 	</body>
 </html>

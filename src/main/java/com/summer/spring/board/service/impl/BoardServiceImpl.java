@@ -1,6 +1,7 @@
 package com.summer.spring.board.service.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,18 @@ public class BoardServiceImpl implements BoardService{
 	public Board selectBoardOneByNo(Integer boardNo) {
 		Board board = bStore.selectBoardOneByNo(session, boardNo);
 		return board;
+	}
+
+	@Override
+	public int deleteBoard(Board board) {
+		int result = bStore.deleteBoard(session, board);
+		return result;
+	}
+
+	@Override
+	public int updateBoard(Board board) {
+		int result = bStore.updateBoard(session, board);
+		return result;
 	}
 
 }

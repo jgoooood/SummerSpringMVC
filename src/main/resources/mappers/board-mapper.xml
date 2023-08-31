@@ -22,14 +22,49 @@
 	</insert>
 	
 	<select id="selectListCount" resultType="_int">
-		SELECT COUNT(*) FROM BOARD_TBL
+		SELECT COUNT(*) FROM BOARD_TBL WHERE B_STATUS='Y'
 	</select>
 	
 	<select id="selectBoardList" resultMap="BoardResultMap">
-		SELECT * FROM BOARD_TBL ORDER BY BOARD_NO DESC
+		SELECT * FROM BOARD_TBL WHERE B_STATUS='Y' ORDER BY BOARD_NO DESC
 	</select>
 	
 	<select id="selectBoardOneByNo" resultMap="BoardResultMap">
-		SELECT * FROM BOARD_TBL WHERE BOARD_NO = #{boardNo} 
+		SELECT * FROM BOARD_TBL WHERE BOARD_NO = #{boardNo} AND B_STATUS='Y'
 	</select>
+	
+	<update id="updateBoard">
+		UPDATE BOARD_TBL 
+		SET BOARD_TITLE = #{boardTitle}, BOARD_CONTENT = #{boardContent}, 
+		BOARD_FILENAME = #{boardFileName}, BOARD_FILERENAME = #{boardFileRename}, 
+		BOARD_FILEPATH = #{boardFilePath}, BOARD_FILELENGTH = #{boardFileLength}, 
+		B_UPDATE_DATE = DEFAULT 
+		WHERE BOARD_NO = #{boardNo}
+	</update>
+	
+	<update id="deleteBoard">
+		UPDATE BOARD_TBL SET B_STATUS = 'N' WHERE BOARD_NO = #{boardNo} AND BOARD_WRITER = #{boardWriter}
+	</update>
+	
+	<!-- 검색기능 수정예정 
+	<select id="selectListByKeywordCount" resultType="_int">
+	 검색키워드에 따라 검색결과가 달라지고, 행의 개수도 달라지는 동적쿼리 적용 
+		SELECT COUNT(*) FROM NOTICE_TBL
+		<if test="searchCondition == 'all'"> 
+			WHERE NOTICE_SUBJECT like '%'||#{searchKeyword}||'%' OR NOTICE_CONTENT like '%'||#{searchKeyword}||'%' OR NOTICE_WRITER like '%'||#{searchKeyword}||'%'		
+		</if> 
+		<if test="searchCondition == 'writer'">
+			WHERE NOTICE_WRITER like '%'||#{searchKeyword}||'%'
+		</if> 
+		<if test="searchCondition == 'title'">
+			WHERE NOTICE_SUBJECT like '%'||#{searchKeyword}||'%' 		
+		</if> 
+		<if test="searchCondition == 'content'">
+			WHERE NOTICE_CONTENT like '%'||#{searchKeyword}||'%' 
+		</if>
+		WHERE B_STATUS='Y' B_STATUS='Y'인것만 나오게 함
+	</select>
+	-->
+	
+	
 </mapper>

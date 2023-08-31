@@ -91,7 +91,7 @@
 						</form>
 					</td>
 					<td>
-						<button>글쓰기</button>
+						<a href="/board/write.kh">글쓰기</a>
 					</td>
 				</tr>
 		</table>

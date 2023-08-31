@@ -29,4 +29,16 @@ public class ReplyStoreLogic implements ReplyStore{
 		return result;
 	}
 
+	@Override
+	public int deleteReply(SqlSession session, Reply reply) {
+		int result = session.update("ReplyMapper.deleteReply", reply);
+		return result;
+	}
+
+	@Override
+	public int deleteAllReply(SqlSession session, Integer boardNo) {
+		int result = session.delete("ReplyMapper.deleteAllReply", boardNo);
+		return result;
+	}
+
 }

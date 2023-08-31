@@ -1,6 +1,7 @@
 package com.summer.spring.board.store;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 
@@ -39,5 +40,21 @@ public interface BoardStore {
 	 * @return
 	 */
 	Board selectBoardOneByNo(SqlSession session, Integer boardNo);
+
+	/**
+	 * 게시글삭제 Store
+	 * @param session
+	 * @param board
+	 * @return
+	 */
+	int deleteBoard(SqlSession session, Board board);
+
+	/**
+	 * 게시글 수정 Store
+	 * @param session
+	 * @param board
+	 * @return
+	 */
+	int updateBoard(SqlSession session, Board board);
 
 }

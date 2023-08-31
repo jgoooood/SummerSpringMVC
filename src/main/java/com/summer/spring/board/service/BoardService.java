@@ -1,6 +1,7 @@
 package com.summer.spring.board.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.summer.spring.board.domain.Board;
 import com.summer.spring.board.domain.PageInfo;
@@ -33,5 +34,19 @@ public interface BoardService {
 	 * @return
 	 */
 	Board selectBoardOneByNo(Integer boardNo);
+
+	/**
+	 * 게시글 삭제 Service
+	 * @param board
+	 * @return
+	 */
+	int deleteBoard(Board board);
+
+	/**
+	 * 게시글 수정 Service
+	 * @param board
+	 * @return
+	 */
+	int updateBoard(Board board);
 
 }

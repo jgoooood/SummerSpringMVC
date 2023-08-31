@@ -1,6 +1,7 @@
 package com.summer.spring.board.store.logic;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
@@ -38,6 +39,18 @@ public class BoardStoreLogic implements BoardStore {
 	public Board selectBoardOneByNo(SqlSession session, Integer boardNo) {
 		Board board = session.selectOne("BoardMapper.selectBoardOneByNo", boardNo);
 		return board;
+	}
+
+	@Override
+	public int deleteBoard(SqlSession session, Board board) {
+		int result = session.update("BoardMapper.deleteBoard", board);
+		return result;
+	}
+
+	@Override
+	public int updateBoard(SqlSession session, Board board) {
+		int result = session.update("BoardMapper.updateBoard", board);
+		return result;
 	}
 
 }

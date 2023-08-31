@@ -31,10 +31,21 @@
 					<a href="${board.boardFilePath }" download>${board.boardFileName }</a>
 				</li>
 			</ul>
+			<c:url var="delBoardUrl" value="/board/delete.kh">
+				<c:param name="boardNo" value="${board.boardNo }"></c:param>
+				<c:param name="boardWriter" value="${board.boardWriter }"></c:param>
+			</c:url>
+			<c:url var="modifyUrl" value="/board/modify.kh">
+				<c:param name="boardNo" value="${board.boardNo }"></c:param>
+			</c:url>
 			<div>
-				<button type="button" onclick="showModifyPage();">수정하기</button>
+				<!-- 로그인한 아이디와 작성자가 일치해야만 수정,삭제버튼 보이게 함 -->
+				<c:if test="${board.boardWriter eq memberId }">
+					<button type="button" onclick="showModifyPage('${modifyUrl}');">수정하기</button>
+					<button type="button" onclick="deleteBoard('${delBoardUrl}');">삭제하기</button>
+				</c:if>
 				<button type="button" onclick="showModifyList();">목록이동</button>
-				<button>삭제하기</button>
+				<button type="button" onclick="javascript:history.go(-1);">뒤로가기</button>
 			</div>
 			<!-- 댓글 등록 -->
 			<form action="/reply/add.kh" method="post">
@@ -57,7 +68,16 @@
 						<td>
 							<a href="javascript:void(0);" onclick="showModifyForm(this);">수정하기</a>
 <%-- 							<a href="javascript:void(0);" onclick="showModifyForm(this, '${rList.replyContent}');">수정하기</a> --%>
-							<a href="#">삭제하기</a>
+							<c:url var="delUrl" value="/reply/delete.kh">
+								<!-- url태그로 쿼리스트링 만들어줌 -->
+								<!-- 지우려는 댓글 작성자와 댓글번호를 특정해서 삭제-->
+								<!-- 댓글작성자는 로그인한 아이디와 일치해야만 삭제 가능하도록 함 -->
+								<c:param name="replyNo" value="${rList.replyNo }"></c:param>
+								<c:param name="replyWriter" value="${rList.replyWriter }"></c:param>
+								<!-- 성공하면 detail로 가기위해서 필요한 boardNo 세팅 -->
+								<c:param name="refBoardNo" value="${rList.refBoardNo }"></c:param>
+							</c:url>
+							<a href="javascript:void(0);" onclick="deleteReply('${delUrl}');">삭제하기</a>
 						</td>
 					</tr>
 					<tr id="replyModifyForm" style="display:none;">
@@ -76,13 +96,20 @@
 				</c:forEach>
 			</table>
 			<script>
-				function showModifyPage() {
-					const boardNo = "${board.boardNo }";
-					location.href="/board/modify.kh?boardNo="+boardNo;
+				// 게시글
+				function deleteBoard(delBoardUrl) {
+					//alert(delBoardUrl);
+					location.href = delBoardUrl;
+				}
+				
+				function showModifyPage(modifyUrl) {
+					//const boardNo = "${board.boardNo }";
+					location.href=modifyUrl;
 				}
 				function showModifyList() {
 					location.href="/board/list.kh";
 				}
+				
 				//obj는 누르는 버튼을 this로 받을 수 있는 변수임
 				function replyModify(obj, replyNo, refBoardNo) {
 					//dom프로그래밍을 이용하는 방법
@@ -188,6 +215,12 @@
 					//obj.parentElement.parentElement.nextElementSibling.style.display="";
 					
 				//}
+				function deleteReply(url) {
+					//DELETE FROM REPLY_TBL WHERE REPLY_NO = 샵{replyNo } AND R_STATUS = 'Y';
+					//UPDATE REPLY_TBL SET R_STATUS = 'N' WHERE REPLY_NO = 샵{replyNo };
+					//alert(url); reply/delete.kh?replyNo=1 -> 삭제시킬 댓글 alert창에 뜸
+					location.href = url;
+				}
 			</script>	
 	</body>
 </html>
